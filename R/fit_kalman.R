@@ -33,6 +33,30 @@
 #'   disturbances;
 #'   \item \code{F_4xCO2} - effective radiative forcing due to CO2 quadrupling.
 #' }
+#' @param list of lower bounds for the optimization containing the following
+#' elements:
+#' \itemize{
+#'   \item \code{gamma} - stochastic forcing correlation parameter;
+#'   \item \code{C} - vector of box heat capacities;
+#'   \item \code{kappa} - vector of heat transfer coefficients;
+#'   \item \code{epsilon} - deep ocean heat uptake efficacy factor;
+#'   \item \code{sigma_eta} - stochastic forcing standard deviation parameter;
+#'   \item \code{sigma_xi} - standard deviation of stochastic temperature
+#'   disturbances;
+#'   \item \code{F_4xCO2} - effective radiative forcing due to CO2 quadrupling.
+#' }
+#' @param list of upper bounds for the optimization containing the following
+#' elements:
+#' \itemize{
+#'   \item \code{gamma} - stochastic forcing correlation parameter;
+#'   \item \code{C} - vector of box heat capacities;
+#'   \item \code{kappa} - vector of heat transfer coefficients;
+#'   \item \code{epsilon} - deep ocean heat uptake efficacy factor;
+#'   \item \code{sigma_eta} - stochastic forcing standard deviation parameter;
+#'   \item \code{sigma_xi} - standard deviation of stochastic temperature
+#'   disturbances;
+#'   \item \code{F_4xCO2} - effective radiative forcing due to CO2 quadrupling.
+#' }
 #' @param T1 time series of global mean surface temperature.
 #' @param N time series of top-of-the-atmosphere net downward radiative flux.
 #' @param alpha quadratic penalty applied to heat capacity of deep-ocean box.
@@ -94,16 +118,20 @@
 #'
 #' # print parameter estimates
 #' print(HadGEM2$p)
-FitKalman <- function(inits, T1, N, alpha = 0, maxeval = 1e+05) {
+FitKalman <- function(inits, lower, upper, T1, N, alpha = 0, maxeval = 1e+05) {
 
   # transform to optimization domain
   inits <- Transform(inits)
   dataset <- rbind(T1, N)
+  lower <- Transform(lower)
+  upper <- Transform(upper)
 
   # minimize negative log-likelihood
   opt <- nloptr::bobyqa(
     x0 = inits,
     fn = KalmanNegLogLik,
+    lower = lower,
+    upper = upper,
     dataset = dataset,
     alpha = alpha,
     control = list(maxeval = maxeval))
